@@ -1,10 +1,10 @@
-﻿using ECommerceApi.Context;
-using ECommerceApi.Entities;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
-namespace ECommerceApi.Controllers
+﻿namespace ECommerceApi.Controllers
 {
+    using ECommerceApi.Context;
+    using ECommerceApi.Entities;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
     [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : ControllerBase
@@ -21,27 +21,26 @@ namespace ECommerceApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> OrderDetails(int orderId) 
         { 
-            var productDetails = await (from orderDetail in _context.OrderDetails
-                                        join order in _context.Orders on orderDetail.OrderId equals order.Id
-                                        join product in _context.Products on orderDetail.OrderId equals product.Id
-                                        where orderDetail.OrderId == order.Id
-                                        select new 
+            var orderDetails = await _context.OrderDetails
+                                        .AsNoTracking()
+                                        .Where(od => od.OrderId == orderId)
+                                        .Select(orderDetail => new
                                         {
                                             Id = orderDetail.Id,
                                             Quantity = orderDetail.Quantity,
                                             SubTotal = orderDetail.TotalValue,
-                                            ProductName = product.Name,
-                                            ProductImage = product.ImageUrl,
-                                            ProductPrice = product.Price,
+                                            ProductName = orderDetail.Product!.Name,
+                                            ProductImage = orderDetail.Product.ImageUrl,
+                                            ProductPrice = orderDetail.Product.Price,
 
                                         }).ToListAsync();
 
-            if (productDetails == null || productDetails.Count == 0) 
+            if (!orderDetails.Any()) 
             { 
-                return NotFound("Product details not found."); 
+                return NotFound("Order details not found."); 
             }
 
-            return Ok(productDetails);
+            return Ok(orderDetails);
         }
 
         [HttpGet("[action]/{userId}")]
@@ -49,14 +48,15 @@ namespace ECommerceApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> OrdersByUser(int userId) 
         {
-            var orders = await (from order in _context.Orders
-                                where order.UserId == userId
-                                orderby order.OrderDate descending
-                                select new
+            var orders = await _context.Orders
+                                .AsNoTracking()
+                                .Where (o => o.UserId == userId)
+                                .OrderByDescending(o => o.OrderDate)
+                                .Select(orders => new
                                 {
-                                    Id = order.Id,
-                                    TotalOrder = order.TotalValue,
-                                    OrderDate = order.OrderDate
+                                    Id = orders.Id,
+                                    TotalOrder = orders.TotalValue,
+                                    OrderDate = orders.OrderDate
 
                                 }).ToListAsync();
 

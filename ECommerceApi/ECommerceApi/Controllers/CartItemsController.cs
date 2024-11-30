@@ -1,11 +1,10 @@
 ﻿namespace ECommerceApi.Controllers
 {
+    using System.Security.Claims;
     using ECommerceApi.Context;
     using ECommerceApi.Entities;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
-    using System.Runtime.CompilerServices;
-    using System.Security.Claims;
 
     [Route("api/[controller]")]
     [ApiController]

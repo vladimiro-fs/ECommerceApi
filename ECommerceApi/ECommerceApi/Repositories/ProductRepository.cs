@@ -22,21 +22,21 @@
 
         public async Task<IEnumerable<Product>> GetPopularProductsAsync() 
         { 
-            return await _context.Products
+            return await _context.Products.AsNoTracking()
                 .Where(p => p.Popular)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetBestSellerProductsAsync() 
         { 
-            return await _context.Products
+            return await _context.Products.AsNoTracking()
                 .Where (p => p.BestSeller)
                 .ToListAsync();
         }
 
         public async Task<Product> GetProductDetailsAsync(int id) 
         {
-            var productDetails = await _context.Products
+            var productDetails = await _context.Products.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (productDetails == null) 
